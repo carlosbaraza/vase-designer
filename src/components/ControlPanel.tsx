@@ -1,8 +1,13 @@
 import { useVaseStore } from "../store/vaseStore";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { debounce } from "lodash";
+import * as THREE from "three";
 
-export default function ControlPanel() {
+interface ControlPanelProps {
+  meshRef?: React.RefObject<THREE.Mesh | null>;
+}
+
+export default function ControlPanel({ meshRef }: ControlPanelProps) {
   const {
     parameters,
     setParameter,
@@ -10,8 +15,9 @@ export default function ControlPanel() {
     randomizeParameters,
     exportConfiguration,
     importConfiguration,
+    exportSTL,
   } = useVaseStore();
-  const [configText, setConfigText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [localRadiusFormula, setLocalRadiusFormula] = useState(parameters.radiusFormula);
   const [localVerticalFormula, setLocalVerticalFormula] = useState(
     parameters.verticalDeformationFormula
@@ -45,17 +51,32 @@ export default function ControlPanel() {
   };
 
   const handleExport = () => {
-    const config = exportConfiguration();
-    setConfigText(config);
+    const { json, filename } = exportConfiguration();
+    const blob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(link.href);
   };
 
-  const handleImport = () => {
-    try {
-      importConfiguration(configText);
-      setConfigText("");
-    } catch (error) {
-      console.error("Failed to import configuration:", error);
-    }
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const config = event.target?.result as string;
+        importConfiguration(config);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""; // Reset file input
+        }
+      } catch (error) {
+        console.error("Failed to import configuration:", error);
+      }
+    };
+    reader.readAsText(file);
   };
 
   return (
@@ -363,25 +384,32 @@ export default function ControlPanel() {
           </div>
 
           <div className="space-y-2">
-            <textarea
-              value={configText}
-              onChange={(e) => setConfigText(e.target.value)}
-              className="w-full h-32 p-2 border rounded font-mono text-sm"
-              placeholder="Paste configuration JSON here..."
-            />
-
             <div className="flex space-x-2">
               <button
                 onClick={handleExport}
                 className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
               >
-                Export
+                Export JSON
               </button>
+              <label className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600 cursor-pointer">
+                Import JSON
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+              </label>
               <button
-                onClick={handleImport}
-                className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                onClick={() => {
+                  if (meshRef?.current?.geometry) {
+                    exportSTL(meshRef.current.geometry);
+                  }
+                }}
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               >
-                Import
+                Export STL
               </button>
             </div>
           </div>

@@ -1,4 +1,4 @@
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, forwardRef } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
@@ -10,6 +10,7 @@ import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeom
 
 interface VaseProps {
   parameters: VaseParameters;
+  meshRef?: React.RefObject<THREE.Mesh | null>;
 }
 
 // Validate and compile formula
@@ -25,8 +26,9 @@ function compileFormula(formula: string, defaultValue: string) {
   }
 }
 
-export default function Vase({ parameters }: VaseProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
+export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps) {
+  const internalMeshRef = useRef<THREE.Mesh>(null);
+  const meshRef = externalMeshRef || internalMeshRef;
 
   // Compile formulas once
   const compiledRadiusFormula = useMemo(
@@ -147,27 +149,7 @@ export default function Vase({ parameters }: VaseProps) {
     });
   }, []);
 
-  // Add export button
-  const handleExport = () => {
-    if (meshRef.current) {
-      exportVaseAsSTL(meshRef.current.geometry);
-    }
-  };
-
-  // Add export button to the scene
-  return (
-    <>
-      <mesh ref={meshRef} geometry={geometry} material={material} />
-      <Html position={[0, -parameters.height / 2 - 50, 0]}>
-        <button
-          onClick={handleExport}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Export STL
-        </button>
-      </Html>
-    </>
-  );
+  return <mesh ref={meshRef} geometry={geometry} material={material} />;
 }
 
 // Helper function to get wave function based on type

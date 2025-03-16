@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import * as THREE from "three";
+import { exportVaseAsSTL } from "../utils/exportSTL";
 
 export interface VaseParameters {
   // Basic parameters
@@ -40,12 +42,13 @@ interface VaseStore {
   setParameter: <K extends keyof VaseParameters>(key: K, value: VaseParameters[K]) => void;
   resetParameters: () => void;
   randomizeParameters: () => void;
-  exportConfiguration: () => string;
+  exportConfiguration: () => { json: string; filename: string };
   importConfiguration: (config: string) => void;
+  exportSTL: (geometry: THREE.BufferGeometry) => void;
 }
 
 const defaultParameters: VaseParameters = {
-  height: 200,
+  height: 120,
   topDiameter: 80,
   bottomDiameter: 100,
 
@@ -95,7 +98,7 @@ export const useVaseStore = create<VaseStore>((set, get) => ({
     set((state) => ({
       parameters: {
         ...state.parameters,
-        height: randomInRange(100, 300),
+        height: randomInRange(100, 150),
         topDiameter: randomInRange(40, 120),
         bottomDiameter: randomInRange(60, 140),
         radialFrequency: randomInRange(3, 8),
@@ -108,7 +111,19 @@ export const useVaseStore = create<VaseStore>((set, get) => ({
   },
 
   exportConfiguration: () => {
-    return JSON.stringify(get().parameters, null, 2);
+    const now = new Date();
+    const timestamp =
+      now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, "0") +
+      now.getDate().toString().padStart(2, "0") +
+      now.getHours().toString().padStart(2, "0") +
+      now.getMinutes().toString().padStart(2, "0") +
+      now.getSeconds().toString().padStart(2, "0");
+    const filename = `${timestamp}-vase.json`;
+    return {
+      json: JSON.stringify(get().parameters, null, 2),
+      filename,
+    };
   },
 
   importConfiguration: (config: string) => {
@@ -118,5 +133,27 @@ export const useVaseStore = create<VaseStore>((set, get) => ({
     } catch (error) {
       console.error("Failed to import configuration:", error);
     }
+  },
+
+  exportSTL: (geometry: THREE.BufferGeometry) => {
+    const now = new Date();
+    const timestamp =
+      now.getFullYear().toString() +
+      (now.getMonth() + 1).toString().padStart(2, "0") +
+      now.getDate().toString().padStart(2, "0") +
+      now.getHours().toString().padStart(2, "0") +
+      now.getMinutes().toString().padStart(2, "0") +
+      now.getSeconds().toString().padStart(2, "0");
+    const filename = `${timestamp}-vase.stl`;
+    exportVaseAsSTL(geometry, filename);
+
+    // Also export the JSON configuration
+    const { json } = get().exportConfiguration();
+    const jsonBlob = new Blob([json], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(jsonBlob);
+    link.download = `${timestamp}-vase.json`;
+    link.click();
+    URL.revokeObjectURL(link.href);
   },
 }));
