@@ -72,8 +72,8 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
         const angle = u * Math.PI * 2;
         const heightFactor = v;
 
-        // Calculate base radius
-        const baseRadius = THREE.MathUtils.lerp(bottomDiameter / 2, topDiameter / 2, heightFactor);
+        // Calculate base radius (keeping the same scale as height)
+        const baseRadius = THREE.MathUtils.lerp(bottomDiameter, topDiameter, heightFactor);
 
         // Apply radial waves
         let radius = baseRadius;
