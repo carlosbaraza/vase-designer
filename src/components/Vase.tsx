@@ -75,7 +75,7 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
         const heightFactor = v;
 
         // Calculate base radius (keeping the same scale as height)
-        const baseRadius = THREE.MathUtils.lerp(bottomDiameter, topDiameter, heightFactor);
+        const baseRadius = THREE.MathUtils.lerp(bottomDiameter / 2, topDiameter / 2, heightFactor);
 
         // Apply radial waves
         let radius = baseRadius;
@@ -106,8 +106,8 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
         // Apply custom formulas
         const scope = {
           r: radius,
-          y: height * heightFactor,
-          height,
+          y: (height / 2) * heightFactor,
+          height: height / 2,
           angle: twistedAngle,
           pi: Math.PI,
         };
@@ -115,7 +115,7 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
         try {
           radius = compiledRadiusFormula.evaluate(scope);
           const verticalDef = compiledVerticalFormula.evaluate(scope);
-          const y = height * heightFactor + verticalDef + verticalOffset;
+          const y = (height / 2) * heightFactor + verticalDef + verticalOffset;
 
           // Calculate final position
           const x = (radius + noiseOffset) * Math.cos(twistedAngle);
@@ -127,7 +127,7 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
           // Fallback to basic shape on error
           const x = radius * Math.cos(twistedAngle);
           const z = radius * Math.sin(twistedAngle);
-          const y = height * heightFactor + verticalOffset;
+          const y = (height / 2) * heightFactor + verticalOffset;
           target.set(x, y, z);
         }
       },
