@@ -1,5 +1,6 @@
 import { useVaseStore } from "../store/vaseStore";
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { debounce } from "lodash";
 
 export default function ControlPanel() {
   const {
@@ -11,6 +12,37 @@ export default function ControlPanel() {
     importConfiguration,
   } = useVaseStore();
   const [configText, setConfigText] = useState("");
+  const [localRadiusFormula, setLocalRadiusFormula] = useState(parameters.radiusFormula);
+  const [localVerticalFormula, setLocalVerticalFormula] = useState(
+    parameters.verticalDeformationFormula
+  );
+
+  // Debounced formula updates
+  const debouncedSetRadiusFormula = useCallback(
+    debounce((formula: string) => {
+      setParameter("radiusFormula", formula);
+    }, 500),
+    []
+  );
+
+  const debouncedSetVerticalFormula = useCallback(
+    debounce((formula: string) => {
+      setParameter("verticalDeformationFormula", formula);
+    }, 500),
+    []
+  );
+
+  const handleRadiusFormulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formula = e.target.value;
+    setLocalRadiusFormula(formula);
+    debouncedSetRadiusFormula(formula);
+  };
+
+  const handleVerticalFormulaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formula = e.target.value;
+    setLocalVerticalFormula(formula);
+    debouncedSetVerticalFormula(formula);
+  };
 
   const handleExport = () => {
     const config = exportConfiguration();
@@ -251,22 +283,28 @@ export default function ControlPanel() {
             Radius Formula
             <input
               type="text"
-              value={parameters.radiusFormula}
-              onChange={(e) => setParameter("radiusFormula", e.target.value)}
+              value={localRadiusFormula}
+              onChange={handleRadiusFormulaChange}
               className="w-full p-2 border rounded"
-              placeholder="r * (1 + sin(angle * 5))"
+              placeholder="r * (1 + 0.3 * sin(y / height * pi))"
             />
+            <span className="text-sm text-gray-500">
+              Variables: r (base radius), y (current height), height (total height), angle, pi
+            </span>
           </label>
 
           <label className="block">
             Vertical Deformation Formula
             <input
               type="text"
-              value={parameters.verticalDeformationFormula}
-              onChange={(e) => setParameter("verticalDeformationFormula", e.target.value)}
+              value={localVerticalFormula}
+              onChange={handleVerticalFormulaChange}
               className="w-full p-2 border rounded"
               placeholder="y + sin(angle * 3) * 10"
             />
+            <span className="text-sm text-gray-500">
+              Variables: y (current height), height (total height), angle, pi
+            </span>
           </label>
         </div>
       </section>

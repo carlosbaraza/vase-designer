@@ -1,10 +1,10 @@
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useCallback } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { VaseParameters } from "../store/vaseStore";
 import { createNoise2D } from "simplex-noise";
-import { evaluate } from "mathjs";
+import { evaluate, compile } from "mathjs";
 import { exportVaseAsSTL } from "../utils/exportSTL";
 import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
 
@@ -12,8 +12,32 @@ interface VaseProps {
   parameters: VaseParameters;
 }
 
+// Validate and compile formula
+function compileFormula(formula: string, defaultValue: string) {
+  try {
+    // Test the formula with sample values
+    const scope = { r: 1, y: 1, height: 1, angle: 1, pi: Math.PI };
+    evaluate(formula, scope);
+    return compile(formula);
+  } catch (error) {
+    console.error("Invalid formula:", error);
+    return compile(defaultValue);
+  }
+}
+
 export default function Vase({ parameters }: VaseProps) {
   const meshRef = useRef<THREE.Mesh>(null);
+
+  // Compile formulas once
+  const compiledRadiusFormula = useMemo(
+    () => compileFormula(parameters.radiusFormula, "r"),
+    [parameters.radiusFormula]
+  );
+
+  const compiledVerticalFormula = useMemo(
+    () => compileFormula(parameters.verticalDeformationFormula, "y"),
+    [parameters.verticalDeformationFormula]
+  );
 
   // Create geometry
   const geometry = useMemo(() => {
@@ -35,8 +59,6 @@ export default function Vase({ parameters }: VaseProps) {
       surfaceNoiseAmount,
       radialSegments,
       verticalSegments,
-      radiusFormula,
-      verticalDeformationFormula,
     } = parameters;
 
     // Create a parametric geometry
@@ -78,21 +100,32 @@ export default function Vase({ parameters }: VaseProps) {
         }
 
         // Apply custom formulas
-        const scope = { r: radius, y: height * heightFactor, angle: twistedAngle };
+        const scope = {
+          r: radius,
+          y: height * heightFactor,
+          height,
+          angle: twistedAngle,
+          pi: Math.PI,
+        };
+
         try {
-          radius = evaluate(radiusFormula, scope);
-          const verticalDef = evaluate(verticalDeformationFormula, scope);
-          heightFactor * height + verticalDef;
+          radius = compiledRadiusFormula.evaluate(scope);
+          const verticalDef = compiledVerticalFormula.evaluate(scope);
+          const y = height * heightFactor + verticalDef + verticalOffset;
+
+          // Calculate final position
+          const x = (radius + noiseOffset) * Math.cos(twistedAngle);
+          const z = (radius + noiseOffset) * Math.sin(twistedAngle);
+
+          target.set(x, y, z);
         } catch (error) {
-          console.error("Error evaluating custom formula:", error);
+          console.error("Error evaluating formula:", error);
+          // Fallback to basic shape on error
+          const x = radius * Math.cos(twistedAngle);
+          const z = radius * Math.sin(twistedAngle);
+          const y = height * heightFactor + verticalOffset;
+          target.set(x, y, z);
         }
-
-        // Calculate final position
-        const x = (radius + noiseOffset) * Math.cos(twistedAngle);
-        const z = (radius + noiseOffset) * Math.sin(twistedAngle);
-        const y = height * heightFactor + verticalOffset;
-
-        target.set(x, y, z);
       },
       radialSegments,
       verticalSegments
@@ -102,7 +135,7 @@ export default function Vase({ parameters }: VaseProps) {
     parametricGeometry.computeVertexNormals();
 
     return parametricGeometry;
-  }, [parameters]);
+  }, [parameters, compiledRadiusFormula, compiledVerticalFormula]);
 
   // Create material
   const material = useMemo(() => {
