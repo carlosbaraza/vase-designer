@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 3D Vase Generator
+
+A web-based application for designing custom vases for 3D printing in vase mode. Create beautiful, mathematically-generated vases with highly customizable parameters and export them as STL files.
+
+## Features
+
+- Real-time 3D preview
+- Customizable vase parameters:
+  - Basic dimensions (height, top/bottom diameter)
+  - Radial and vertical waves
+  - Twist and spiral effects
+  - Surface features (noise, patterns)
+  - Custom mathematical formulas
+- Export to STL for 3D printing
+- Save and load designs
+- Random design generator
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+- Node.js 18.0 or higher
+- npm 9.0 or higher
+
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/yourusername/vase-generator.git
+cd vase-generator
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open your browser and navigate to `http://localhost:3000`
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Adjust the vase parameters using the control panel on the right
+2. Preview your changes in real-time in the 3D viewer
+3. Use the camera controls to inspect your design:
+   - Left click + drag to rotate
+   - Right click + drag to pan
+   - Scroll to zoom
+4. Click "Export STL" when you're happy with your design
+5. Use the configuration panel to save/load your designs
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Custom Formulas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The vase generator supports custom mathematical formulas for both radius and vertical deformation. Available variables:
 
-## Deploy on Vercel
+- `r`: Base radius at current point
+- `y`: Current height
+- `angle`: Current angle (in radians)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Example formulas:
+- Radius: `r * (1 + sin(angle * 5) * 0.2)`
+- Vertical: `y + cos(angle * 3) * 10`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 3D Printing Tips
+
+- The generated STL is a solid model
+- Use "vase mode" (spiral outer contour) in your slicer
+- Recommended slicer settings:
+  - Layer height: 0.2-0.3mm
+  - Line width: 0.4-0.6mm
+  - Bottom layers: 3-5
+  - No top layers
+  - No infill needed
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
