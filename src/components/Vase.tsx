@@ -6,7 +6,7 @@ import { VaseParameters } from "../store/vaseStore";
 import { createNoise2D } from "simplex-noise";
 import { evaluate, compile } from "mathjs";
 import { exportVaseAsSTL } from "../utils/exportSTL";
-import { ParametricGeometry } from "three/examples/jsm/geometries/ParametricGeometry";
+import { ParametricGeometry } from "three/addons/geometries/ParametricGeometry.js";
 
 interface VaseProps {
   parameters: VaseParameters;
@@ -61,9 +61,11 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
       surfaceNoiseAmount,
       radialSegments,
       verticalSegments,
+      topTabHeight,
+      bottomTabHeight,
     } = parameters;
 
-    // Create a parametric geometry
+    // Create base parametric geometry
     const parametricGeometry = new ParametricGeometry(
       (u: number, v: number, target: THREE.Vector3) => {
         // v goes from 0 to 1 (bottom to top)
@@ -133,9 +135,95 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
       verticalSegments
     );
 
-    // Compute vertex normals for proper lighting
-    parametricGeometry.computeVertexNormals();
+    // Add tabs by extruding top and bottom profiles
+    if (topTabHeight > 0 || bottomTabHeight > 0) {
+      // Get the original vertices and faces
+      const originalPositions = parametricGeometry.getAttribute("position");
+      const originalIndices = parametricGeometry.getIndex();
 
+      if (!originalIndices) {
+        console.error("Geometry has no indices");
+        return parametricGeometry;
+      }
+
+      // Calculate vertices per layer (radialSegments + 1 because we need to close the circle)
+      const verticesPerLayer = radialSegments + 1;
+
+      // Create arrays for new vertices and faces
+      const newPositions = [];
+      const newIndices = [];
+
+      // Copy all original vertices and indices
+      for (let i = 0; i < originalPositions.count; i++) {
+        newPositions.push(
+          originalPositions.getX(i),
+          originalPositions.getY(i),
+          originalPositions.getZ(i)
+        );
+      }
+      for (let i = 0; i < originalIndices.count; i++) {
+        newIndices.push(originalIndices.getX(i));
+      }
+
+      // Add bottom tab if needed
+      if (bottomTabHeight > 0) {
+        const bottomVertexStart = newPositions.length / 3;
+        // Copy bottom profile vertices and move them down
+        for (let i = 0; i < verticesPerLayer; i++) {
+          newPositions.push(
+            originalPositions.getX(i),
+            originalPositions.getY(i) - bottomTabHeight,
+            originalPositions.getZ(i)
+          );
+        }
+        // Create faces connecting bottom profile to its extrusion
+        for (let i = 0; i < radialSegments; i++) {
+          const a = i;
+          const b = i + 1;
+          const c = bottomVertexStart + i + 1;
+          const d = bottomVertexStart + i;
+          // Add two triangles to form a quad
+          newIndices.push(a, b, c);
+          newIndices.push(c, d, a);
+        }
+      }
+
+      // Add top tab if needed
+      if (topTabHeight > 0) {
+        const topLayerStart = verticesPerLayer * verticalSegments;
+        const topVertexStart = newPositions.length / 3;
+        // Copy top profile vertices and move them up
+        for (let i = 0; i < verticesPerLayer; i++) {
+          const vertexIndex = topLayerStart + i;
+          newPositions.push(
+            originalPositions.getX(vertexIndex),
+            originalPositions.getY(vertexIndex) + topTabHeight,
+            originalPositions.getZ(vertexIndex)
+          );
+        }
+        // Create faces connecting top profile to its extrusion
+        for (let i = 0; i < radialSegments; i++) {
+          const a = topLayerStart + i;
+          const b = topLayerStart + i + 1;
+          const c = topVertexStart + i + 1;
+          const d = topVertexStart + i;
+          // Add two triangles to form a quad
+          newIndices.push(a, c, b);
+          newIndices.push(c, a, d);
+        }
+      }
+
+      // Create new geometry with the added tabs
+      const newGeometry = new THREE.BufferGeometry();
+      newGeometry.setAttribute("position", new THREE.Float32BufferAttribute(newPositions, 3));
+      newGeometry.setIndex(newIndices);
+      newGeometry.computeVertexNormals();
+
+      return newGeometry;
+    }
+
+    // If no tabs needed, return original geometry
+    parametricGeometry.computeVertexNormals();
     return parametricGeometry;
   }, [parameters, compiledRadiusFormula, compiledVerticalFormula]);
 

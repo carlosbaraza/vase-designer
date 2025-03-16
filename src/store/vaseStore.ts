@@ -8,6 +8,10 @@ export interface VaseParameters {
   topDiameter: number;
   bottomDiameter: number;
 
+  // Tab parameters
+  topTabHeight: number;
+  bottomTabHeight: number;
+
   // Radial waves
   radialWaveType: "sine" | "square" | "triangle" | "sawtooth";
   radialFrequency: number;
@@ -51,6 +55,9 @@ const defaultParameters: VaseParameters = {
   height: 120,
   topDiameter: 100,
   bottomDiameter: 120,
+
+  topTabHeight: 0,
+  bottomTabHeight: 0,
 
   radialWaveType: "sine",
   radialFrequency: 6,

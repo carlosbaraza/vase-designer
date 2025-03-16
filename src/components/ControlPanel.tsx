@@ -156,6 +156,32 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             />
             <span className="text-sm">{parameters.bottomDiameter}mm</span>
           </label>
+
+          <label className="block">
+            Top Tab Height
+            <input
+              type="range"
+              min="0"
+              max="50"
+              value={parameters.topTabHeight}
+              onChange={(e) => setParameter("topTabHeight", Number(e.target.value))}
+              className="w-full"
+            />
+            <span className="text-sm">{parameters.topTabHeight}mm</span>
+          </label>
+
+          <label className="block">
+            Bottom Tab Height
+            <input
+              type="range"
+              min="0"
+              max="50"
+              value={parameters.bottomTabHeight}
+              onChange={(e) => setParameter("bottomTabHeight", Number(e.target.value))}
+              className="w-full"
+            />
+            <span className="text-sm">{parameters.bottomTabHeight}mm</span>
+          </label>
         </div>
       </section>
 
