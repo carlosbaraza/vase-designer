@@ -14,11 +14,11 @@ export default function VaseCanvas({ meshRef }: VaseCanvasProps) {
 
   return (
     <Canvas>
-      <color attach="background" args={["#f0f0f0"]} />
+      <color attach="background" args={["#3f3f3f"]} />
       <PerspectiveCamera makeDefault position={[0, 0, 400]} />
 
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[10, 10, 10]} intensity={1} />
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[10, 10, 10]} intensity={1.3} />
 
       <Suspense fallback={null}>
         <Vase parameters={parameters} meshRef={meshRef} />

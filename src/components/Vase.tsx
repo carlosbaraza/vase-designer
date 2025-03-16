@@ -142,7 +142,7 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
   // Create material
   const material = useMemo(() => {
     return new THREE.MeshStandardMaterial({
-      color: 0xf0f0f0,
+      color: 0xfdfdfd,
       metalness: 0.1,
       roughness: 0.8,
       side: THREE.DoubleSide,

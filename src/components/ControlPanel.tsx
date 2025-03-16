@@ -50,6 +50,37 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
     debouncedSetVerticalFormula(formula);
   };
 
+  // Add example radius formulas
+  const radiusFormulaExamples = {
+    Basic: "r",
+    "Geometric Pattern": "r * (1 + 0.15 * (sin(6 * angle) * sin(8 * y/height * pi)))",
+    "Organic Flow": "r * (1 + 0.2 * sin(3 * angle) + 0.15 * sin(5 * y/height * pi))",
+    "Bulging Middle": "r * (1 + 0.3 * sin(y/height * pi))",
+    "Double Bulge": "r * (1 + 0.25 * sin(2 * y/height * pi))",
+    "Triple Bulge": "r * (1 + 0.2 * sin(3 * y/height * pi))",
+    "Asymmetric Bulge": "r * (1 + 0.3 * (sin(y/height * pi) + 0.3 * sin(2 * y/height * pi)))",
+    "Gentle Waves": "r * (1 + 0.15 * sin(4 * angle) * (1 - (y/height - 0.5)^2))",
+    "Smooth Ripple": "r * (1 + 0.15 * sin(6 * angle + 8 * y/height * pi))",
+    "Flowing Curves": "r * (1 + 0.2 * sin(4 * angle) * sin(3 * y/height * pi))",
+    "Dancing Waves": "r * (1 + 0.25 * sin(3 * angle) * (0.5 + 0.5 * sin(4 * y/height * pi)))",
+    "Elegant Twist": "r * (1 + 0.2 * sin(4 * (angle + 2 * y/height * pi)))",
+    "Smooth Bell": "r * (1 + 0.4 * (1 - (y/height - 0.5)^2))",
+    "Lower Bulge": "r * (1 + 0.35 * (1 - y/height)^1.5)",
+    "Upper Bulge": "r * (1 + 0.35 * (y/height)^1.5)",
+    Amphora: "r * (1 + 0.4 * sin(y/height * pi) * (1 - y/height))",
+    "Wavy Bulge": "r * (1 + 0.3 * sin(y/height * pi) + 0.1 * sin(6 * angle))",
+    "Spiral Bulge": "r * (1 + 0.25 * sin(y/height * pi) * (1 + 0.3 * sin(4 * angle)))",
+    "Undulating Surface":
+      "r * (1 + 0.2 * sin(5 * angle) * sin(6 * y/height * pi) + 0.1 * sin(y/height * pi))",
+    "Gentle Hourglass": "r * (0.8 + 0.4 * sin(y/height * pi + pi/2))",
+  };
+
+  const handleRadiusFormulaSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const formula = e.target.value;
+    setLocalRadiusFormula(formula);
+    debouncedSetRadiusFormula(formula);
+  };
+
   const handleExport = () => {
     const { json, filename } = exportConfiguration();
     const blob = new Blob([json], { type: "application/json" });
@@ -299,34 +330,57 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
       {/* Custom Formulas */}
       <section className="space-y-4">
         <h3 className="text-lg font-semibold">Custom Formulas</h3>
-        <div className="space-y-2">
-          <label className="block">
-            Radius Formula
-            <input
-              type="text"
-              value={localRadiusFormula}
-              onChange={handleRadiusFormulaChange}
-              className="w-full p-2 border rounded"
-              placeholder="r * (1 + 0.3 * sin(y / height * pi))"
-            />
-            <span className="text-sm text-gray-500">
-              Variables: r (base radius), y (current height), height (total height), angle, pi
-            </span>
-          </label>
 
-          <label className="block">
-            Vertical Deformation Formula
-            <input
-              type="text"
-              value={localVerticalFormula}
-              onChange={handleVerticalFormulaChange}
-              className="w-full p-2 border rounded"
-              placeholder="y + sin(angle * 3) * 10"
-            />
-            <span className="text-sm text-gray-500">
-              Variables: y (current height), height (total height), angle, pi
-            </span>
-          </label>
+        {/* Radius Formula */}
+        <div className="space-y-2">
+          <h4 className="font-medium">Radius Formula</h4>
+          <select
+            value={
+              Object.entries(radiusFormulaExamples).find(
+                ([_, v]) => v === localRadiusFormula
+              )?.[0] || ""
+            }
+            onChange={handleRadiusFormulaSelect}
+            className="w-full p-2 border rounded mb-2"
+          >
+            <option value="">Select an example...</option>
+            {Object.entries(radiusFormulaExamples).map(([name, formula]) => (
+              <option key={name} value={formula}>
+                {name}
+              </option>
+            ))}
+          </select>
+          <textarea
+            value={localRadiusFormula}
+            onChange={(e) => {
+              setLocalRadiusFormula(e.target.value);
+              debouncedSetRadiusFormula(e.target.value);
+            }}
+            className="w-full p-2 border rounded font-mono text-sm h-20 resize-y"
+            placeholder="Enter radius formula..."
+          />
+          <p className="text-sm text-gray-600">
+            Available variables: r (base radius), y (current height), height (total height), angle
+            (in radians), pi (π)
+          </p>
+        </div>
+
+        {/* Vertical Deformation Formula */}
+        <div className="space-y-2">
+          <h4 className="font-medium">Vertical Deformation Formula</h4>
+          <textarea
+            value={localVerticalFormula}
+            onChange={(e) => {
+              setLocalVerticalFormula(e.target.value);
+              debouncedSetVerticalFormula(e.target.value);
+            }}
+            className="w-full p-2 border rounded font-mono text-sm h-20 resize-y"
+            placeholder="Enter vertical deformation formula..."
+          />
+          <p className="text-sm text-gray-600">
+            Available variables: r (base radius), y (current height), height (total height), angle
+            (in radians), pi (π)
+          </p>
         </div>
       </section>
 

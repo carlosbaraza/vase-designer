@@ -49,16 +49,16 @@ interface VaseStore {
 
 const defaultParameters: VaseParameters = {
   height: 120,
-  topDiameter: 80,
-  bottomDiameter: 100,
+  topDiameter: 100,
+  bottomDiameter: 120,
 
   radialWaveType: "sine",
-  radialFrequency: 5,
-  radialAmplitude: 10,
+  radialFrequency: 6,
+  radialAmplitude: 3,
 
   verticalWaveType: "sine",
-  verticalFrequency: 3,
-  verticalAmplitude: 5,
+  verticalFrequency: 1,
+  verticalAmplitude: 0,
 
   twistAngle: 0,
   twistRate: "linear",
