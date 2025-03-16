@@ -246,7 +246,12 @@ function getWaveFunction(type: "sine" | "square" | "triangle" | "sawtooth") {
     case "sine":
       return Math.sin;
     case "square":
-      return (x: number) => Math.sign(Math.sin(x));
+      return (x: number) => {
+        // Normalize angle to [0, 2π]
+        const t = ((x % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        // Simple square wave that's guaranteed to be the same at 0 and 2π
+        return t < Math.PI ? 1 : -1;
+      };
     case "triangle":
       return (x: number) => {
         const t = ((x % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
