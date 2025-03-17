@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { STLExporter } from "three/examples/jsm/exporters/STLExporter";
+import { STLExporter } from "three/examples/jsm/exporters/STLExporter.js";
 
 export function exportVaseAsSTL(geometry: THREE.BufferGeometry, filename: string = "vase.stl") {
   const exporter = new STLExporter();
