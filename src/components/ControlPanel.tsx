@@ -208,7 +208,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             <input
               type="range"
               min="1"
-              max="20"
+              max="50"
               value={parameters.radialFrequency}
               onChange={(e) => setParameter("radialFrequency", Number(e.target.value))}
               className="w-full"
@@ -220,6 +220,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             Amplitude
             <input
               type="range"
+              step="0.1"
               min="0"
               max="50"
               value={parameters.radialAmplitude}
@@ -419,7 +420,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             <input
               type="range"
               min="16"
-              max="256"
+              max="512"
               step="8"
               value={parameters.radialSegments}
               onChange={(e) => setParameter("radialSegments", Number(e.target.value))}
@@ -433,7 +434,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             <input
               type="range"
               min="16"
-              max="256"
+              max="512"
               step="8"
               value={parameters.verticalSegments}
               onChange={(e) => setParameter("verticalSegments", Number(e.target.value))}
