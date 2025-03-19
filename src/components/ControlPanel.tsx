@@ -73,6 +73,10 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
     "Undulating Surface":
       "r * (1 + 0.2 * sin(5 * angle) * sin(6 * y/height * pi) + 0.1 * sin(y/height * pi))",
     "Gentle Hourglass": "r * (0.8 + 0.4 * sin(y/height * pi + pi/2))",
+    "Perfect Sphere (needs tweaking)": "r + height/1.1 * sqrt(1.4 - ((2 * y/height  - 1))^2) - 46",
+    "Spherical Bulge": "r * (1 + 0.5 * sin(pi * y/height))",
+    "Oval Sphere": "r * (1 + 0.4 * sin(pi * y/height)) * (1 + 0.2 * sin(4 * angle))",
+    "Squished Sphere": "r * (1 + 0.4 * sin(pi * y/height)) * (1 + 0.3 * cos(2 * angle))",
   };
 
   const handleRadiusFormulaSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -100,6 +104,10 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
       try {
         const config = event.target?.result as string;
         importConfiguration(config);
+        // Update local formula states with the imported values
+        const importedConfig = JSON.parse(config);
+        setLocalRadiusFormula(importedConfig.radiusFormula);
+        setLocalVerticalFormula(importedConfig.verticalDeformationFormula);
         if (fileInputRef.current) {
           fileInputRef.current.value = ""; // Reset file input
         }
@@ -208,7 +216,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
             <input
               type="range"
               min="1"
-              max="50"
+              max="100"
               value={parameters.radialFrequency}
               onChange={(e) => setParameter("radialFrequency", Number(e.target.value))}
               className="w-full"
@@ -388,7 +396,7 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
           />
           <p className="text-sm text-gray-600">
             Available variables: r (base radius), y (current height), height (total height), angle
-            (in radians), pi (π)
+            (in radians), pi (π), topRadius (top diameter/2), bottomRadius (bottom diameter/2)
           </p>
         </div>
 

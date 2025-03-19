@@ -17,7 +17,7 @@ interface VaseProps {
 function compileFormula(formula: string, defaultValue: string) {
   try {
     // Test the formula with sample values
-    const scope = { r: 1, y: 1, height: 1, angle: 1, pi: Math.PI };
+    const scope = { r: 1, y: 1, height: 1, angle: 1, pi: Math.PI, topRadius: 1, bottomRadius: 1 };
     evaluate(formula, scope);
     return compile(formula);
   } catch (error) {
@@ -110,6 +110,8 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
           height: height / 2,
           angle: twistedAngle,
           pi: Math.PI,
+          topRadius: topDiameter / 2,
+          bottomRadius: bottomDiameter / 2,
         };
 
         try {
