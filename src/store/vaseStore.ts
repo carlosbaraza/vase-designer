@@ -24,7 +24,7 @@ export interface VaseParameters {
 
   // Twist
   twistAngle: number;
-  twistRate: "linear" | "exponential";
+  twistRate: "linear" | "exponential" | "bell" | "spline";
   twistDirection: "clockwise" | "counterclockwise";
 
   // Surface features

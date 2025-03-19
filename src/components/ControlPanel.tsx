@@ -305,6 +305,8 @@ export default function ControlPanel({ meshRef }: ControlPanelProps) {
           >
             <option value="linear">Linear</option>
             <option value="exponential">Exponential</option>
+            <option value="bell">Bell Curve</option>
+            <option value="spline">Smooth Spline</option>
           </select>
 
           <select

@@ -89,10 +89,19 @@ export default function Vase({ parameters, meshRef: externalMeshRef }: VaseProps
 
         // Apply twist
         const twistFactor = twistDirection === "clockwise" ? 1 : -1;
-        const twistAmount =
-          twistRate === "linear"
-            ? heightFactor * twistAngle
-            : Math.pow(heightFactor, 2) * twistAngle;
+        let twistAmount;
+        if (twistRate === "linear") {
+          twistAmount = heightFactor * twistAngle;
+        } else if (twistRate === "bell") {
+          twistAmount = 4 * Math.pow(heightFactor, 1) * Math.pow(1 - heightFactor, 1) * twistAngle; // Bell curve: 4*h*(1-h) starts at 0, peaks at h=0.5, ends at 0
+        } else if (twistRate === "spline") {
+          // Smooth spline curve with gradual start and end (eased cubic)
+          twistAmount =
+            (3 * Math.pow(heightFactor, 2) - 2 * Math.pow(heightFactor, 3)) * twistAngle;
+        } else {
+          // exponential
+          twistAmount = Math.pow(heightFactor, 2) * twistAngle; // Quadratic curve: starts at 0, increases exponentially to twistAngle
+        }
         const twistedAngle = angle + (twistFactor * twistAmount * Math.PI) / 180;
 
         // Apply surface noise if enabled
